@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RAPS STAR Panel</title>
+<link rel="icon" href="../favicon.ico">
+<style>
+:root{
+  --ungu:#6C4CF1; --ungu2:#8B6CFF; --emas:#F5C542;
+  --bg:#0A0812; --panel:#120E1F; --panel2:#171226; --garis:#241C38;
+  --teks:#F3F0FA; --redup:#9E96B8; --hijau:#3DDC97; --merah:#FF6B6B;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--teks)}
+button{font-family:inherit}
+.tirai{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:40;display:none}
+.tirai.buka{display:block}
+aside{position:fixed;top:0;left:0;bottom:0;width:255px;background:linear-gradient(180deg,#161029,#0E0A1B);
+  border-right:1px solid var(--garis);z-index:50;display:flex;flex-direction:column;transition:transform .22s ease}
+aside.tutup{transform:translateX(-100%)}
+.merk{display:flex;align-items:center;gap:10px;padding:16px 16px 12px}
+.merk .lg{width:36px;height:36px;border-radius:10px;background:linear-gradient(145deg,var(--emas),#8A6A12);
+  display:grid;place-items:center;color:#241A02;font-weight:900}
+.merk b{font-size:14px;display:block}
+.merk span{font-size:11px;color:var(--redup)}
+.menu{flex:1;overflow-y:auto;padding:6px 8px 12px}
+.menu button{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border:0;border-radius:10px;
+  background:transparent;color:#C9C2DE;font-size:13px;font-weight:600;cursor:pointer;text-align:left;margin-bottom:2px}
+.menu button:hover{background:#1C1530;color:#fff}
+.menu button.aktif{background:linear-gradient(90deg,var(--ungu),#4B2FD6);color:#fff;box-shadow:0 6px 18px rgba(108,76,241,.35)}
+.menu button .ik{width:20px;text-align:center;font-size:14px}
+.menu .pisa{height:1px;background:var(--garis);margin:8px 6px}
+.kaki{border-top:1px solid var(--garis);padding:10px 12px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--redup)}
+.kaki .av{width:30px;height:30px;border-radius:50%;background:var(--ungu);display:grid;place-items:center;color:#fff;font-weight:800;font-size:13px}
+.kaki button{margin-left:auto;background:#1C1530;border:1px solid var(--garis);color:var(--teks);border-radius:8px;
+  width:30px;height:30px;cursor:pointer}
+
+header.atas{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;padding:12px 16px;
+  background:rgba(10,8,18,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--garis)}
+header.atas .bukaMenu{display:none;background:#1C1530;border:1px solid var(--garis);color:var(--teks);
+  width:36px;height:36px;border-radius:10px;font-size:16px;cursor:pointer}
+header.atas h1{font-size:15px;margin:0}
+header.atas .kanan{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--redup)}
+main{margin-left:255px;padding:16px 16px 60px;max-width:980px}
+@media (max-width:860px){
+  main{margin-left:0}
+  header.atas .bukaMenu{display:block}
+  aside{box-shadow:0 0 40px rgba(0,0,0,.6)}
+}
+.card{background:var(--panel);border:1px solid var(--garis);border-radius:14px;padding:14px;margin-bottom:12px}
+.card h2{font-size:13.5px;margin:0 0 3px}
+.card .ket{font-size:11.5px;color:var(--redup);margin:0 0 10px;line-height:1.5}
+label{display:block;font-size:11px;color:var(--redup);margin:9px 0 4px}
+input,select{width:100%;padding:10px 12px;border-radius:9px;border:1px solid var(--garis);background:#0C0916;
+  color:var(--teks);font-size:13px;outline:none}
+input:focus,select:focus{border-color:var(--ungu2);box-shadow:0 0 0 3px rgba(108,76,241,.16)}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+button.aksi{flex:1;min-width:110px;padding:10px 14px;border-radius:9px;border:0;cursor:pointer;font-weight:700;font-size:12.5px;
+  background:linear-gradient(145deg,var(--ungu2),var(--ungu));color:#fff}
+button.hantu{background:#1C1530;color:var(--teks);border:1px solid var(--garis)}
+button.bahaya{background:linear-gradient(145deg,#FF8A8A,var(--merah));color:#2A0505}
+.pesan{font-size:12px;margin-top:9px;min-height:15px;line-height:1.5}
+.pesan.ok{color:var(--hijau)} .pesan.err{color:var(--merah)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px}
+.stat{background:var(--panel2);border:1px solid var(--garis);border-radius:11px;padding:11px}
+.stat b{display:block;font-size:19px;color:#fff;font-weight:800}
+.stat span{font-size:10.5px;color:var(--redup)}
+.dua{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:700px){.dua{grid-template-columns:1fr}}
+.kotak{background:#0C0916;border:1px dashed var(--garis);border-radius:11px;padding:11px;font-size:12px;color:var(--redup);line-height:1.7}
+.kotak b{color:var(--teks)}
+.baris{display:flex;align-items:center;gap:9px;padding:9px 10px;border:1px solid var(--garis);border-radius:10px;
+  background:var(--panel2);margin-top:7px;font-size:12px}
+.baris .nm{flex:1;min-width:0}
+.baris .nm b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.baris .nm span{font-size:10.5px;color:var(--redup)}
+.baris button{padding:6px 10px;font-size:11px;border-radius:7px;border:1px solid var(--garis);background:#1C1530;color:var(--teks);cursor:pointer;font-weight:600}
+.pil{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;margin-right:4px}
+.pil.manager{background:rgba(245,197,66,.16);color:var(--emas);border:1px solid rgba(245,197,66,.4)}
+.pil.admin{background:rgba(61,220,151,.14);color:var(--hijau);border:1px solid rgba(61,220,151,.35)}
+.pil.blokir{background:rgba(255,107,107,.15);color:var(--merah);border:1px solid rgba(255,107,107,.4)}
+.sembunyi{display:none!important}
+a{color:var(--ungu2)}
+</style>
+</head>
+<body>
+<div class="tirai" id="tirai"></div>
+
+<aside id="sidebar">
+  <div class="merk">
+    <div class="lg">RS</div>
+    <div><b>RAPS STAR Panel</b><span id="emailSaya">belum masuk</span></div>
+  </div>
+  <div class="menu" id="menu">
+    <button data-hal="dashboard" class="aktif"><span class="ik">🏠</span>Dashboard</button>
+    <button data-hal="user"><span class="ik">👥</span>User</button>
+    <button data-hal="room"><span class="ik">🎤</span>Room</button>
+    <button data-hal="gift"><span class="ik">🎁</span>Gift</button>
+    <button data-hal="cashback"><span class="ik">🎰</span>Cashback gift</button>
+    <button data-hal="frame"><span class="ik">🖼️</span>Frame &amp; banner</button>
+    <button data-hal="aset"><span class="ik">✨</span>Aset &amp; VIP</button>
+    <button data-hal="vps"><span class="ik">🗄️</span>Aset di VPS</button>
+    <button data-hal="emote"><span class="ik">😀</span>Emote room</button>
+    <button data-hal="kirim"><span class="ik">📤</span>Kirim ke user</button>
+    <div class="pisa"></div>
+    <button data-hal="staf"><span class="ik">👤</span>Staf &amp; seller</button>
+    <button data-hal="cs"><span class="ik">💬</span>Customer Service</button>
+    <button data-hal="laporan"><span class="ik">🚩</span>Laporan user</button>
+    <button data-hal="coin"><span class="ik">🪙</span>Coin &amp; reset</button>
+    <button data-hal="cekin"><span class="ik">📅</span>Cek in harian</button>
+    <div class="pisa"></div>
+    <button data-hal="rilis"><span class="ik">📦</span>Rilis aplikasi</button>
+    <button data-hal="blokir"><span class="ik">🚫</span>Blokir user</button>
+  </div>
+  <div class="kaki">
+    <div class="av" id="avSaya">?</div>
+    <div style="min-width:0"><div id="namaKaki" style="color:var(--teks);font-size:11.5px">belum masuk</div><div id="peranKaki">–</div></div>
+    <button id="keluar" title="Keluar">⎋</button>
+  </div>
+</aside>
+
+<header class="atas">
+  <button class="bukaMenu" id="bukaMenu">☰</button>
+  <h1 id="judulHal">Dashboard</h1>
+  <div class="kanan"><span id="jam"></span></div>
+</header>
+
+<main>
+  <!-- MASUK -->
+  <section class="card" id="kartuMasuk">
+    <h2>Masuk panel</h2>
+    <p class="ket">Hanya akun pemilik yang bisa memakai panel ini.</p>
+    <label>Email panel</label>
+    <input id="email" type="email" autocomplete="username" placeholder="nama@gmail.com">
+    <label>Sandi</label>
+    <input id="sandi" type="password" autocomplete="current-password" placeholder="••••••••">
+    <div class="row">
+      <button class="aksi" id="masuk">Masuk</button>
+      <button class="aksi hantu" id="masukGoogle">Masuk dengan Google</button>
+    </div>
+    <div class="pesan" id="pesanMasuk"></div>
+  </section>
+
+  <div id="isi" class="sembunyi">
+
+    <!-- DASHBOARD -->
+    <div data-hal="dashboard">
+      <div class="card">
+        <h2>Ringkasan</h2>
+        <p class="ket">Angka langsung dari Firestore proyek raps-star.</p>
+        <div class="grid">
+          <div class="stat"><b id="nUser">–</b><span>pengguna</span></div>
+          <div class="stat"><b id="nStaf">–</b><span>staf panel</span></div>
+          <div class="stat"><b id="nAset">–</b><span>aset</span></div>
+          <div class="stat"><b id="nVersi">–</b><span>versi rilis</span></div>
+        </div>
+      </div>
+      <div class="dua">
+        <div class="card">
+          <h2>RINCIAN</h2>
+          <div class="kotak" id="rincian">Memuat…</div>
+        </div>
+        <div class="card">
+          <h2>KUNCI</h2>
+          <div class="kotak" id="kunci">Memeriksa…</div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Aksi cepat</h2>
+        <div class="row">
+          <button class="aksi hantu" data-lompat="kirim">Kirim ke user</button>
+          <button class="aksi hantu" data-lompat="staf">Staf &amp; seller</button>
+          <button class="aksi hantu" data-lompat="rilis">Rilis aplikasi</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- USER -->
+    <div data-hal="user" class="sembunyi">
+      <div class="card">
+        <h2>User</h2>
+        <p class="ket">Cari dengan ID angka, UID, atau email.</p>
+        <label>ID / UID / email</label>
+        <input id="kunciCari" placeholder="100000">
+        <div class="row"><button class="aksi" id="cariUser">Cari user</button></div>
+        <div class="kotak" id="hasilCari">Belum ada pencarian.</div>
+      </div>
+    </div>
+
+    <!-- ROOM -->
+    <div data-hal="room" class="sembunyi">
+      <div class="card">
+        <h2>Room</h2>
+        <p class="ket">Daftar room publik dari Realtime Database.</p>
+        <div class="row"><button class="aksi" id="muatRoom">Muat room</button></div>
+        <div class="kotak" id="isiRoom">Belum dimuat.</div>
+      </div>
+    </div>
+
+    <!-- GIFT -->
+    <div data-hal="gift" class="sembunyi">
+      <div class="card">
+        <h2>Gift</h2>
+        <p class="ket">Kirim item hadiah ke user lewat dompetnya.</p>
+        <label>ID user</label>
+        <input id="idGift" placeholder="100000">
+        <label>Item</label>
+        <select id="pilihGift"><option value="">Memuat item…</option></select>
+        <label>Hari berlaku</label>
+        <input id="hariGift" type="number" min="1" value="30">
+        <div class="row"><button class="aksi" id="kirimGift">Kirim gift</button></div>
+        <div class="pesan" id="pesanGift"></div>
+      </div>
+    </div>
+
+    <!-- CASHBACK -->
+    <div data-hal="cashback" class="sembunyi">
+      <div class="card">
+        <h2>Cashback gift</h2>
+        <p class="ket">Aturan cashback yang tersimpan di Firestore.</p>
+        <div class="row"><button class="aksi" id="muatCashback">Muat aturan</button></div>
+        <div class="kotak" id="isiCashback">Belum dimuat.</div>
+      </div>
+    </div>
+
+    <!-- FRAME & BANNER -->
+    <div data-hal="frame" class="sembunyi">
+      <div class="card">
+        <h2>Frame &amp; banner</h2>
+        <p class="ket">Item tampilan yang terdaftar di vipConfig.</p>
+        <div class="row"><button class="aksi" id="muatFrame">Muat item</button></div>
+        <div id="isiFrame"><div class="kotak">Belum dimuat.</div></div>
+      </div>
+    </div>
+
+    <!-- ASET & VIP -->
+    <div data-hal="aset" class="sembunyi">
+      <div class="card">
+        <h2>Aset &amp; VIP</h2>
+        <p class="ket">Ringkasan item dan paket VIP.</p>
+        <div class="grid">
+          <div class="stat"><b id="nFrame">–</b><span>frame</span></div>
+          <div class="stat"><b id="nEfek">–</b><span>efek</span></div>
+          <div class="stat"><b id="nVip">–</b><span>paket VIP</span></div>
+        </div>
+        <div class="kotak" id="isiVip" style="margin-top:10px">Belum dimuat.</div>
+        <div class="row"><button class="aksi" id="muatVip">Muat data</button></div>
+      </div>
+    </div>
+
+    <!-- ASET DI VPS -->
+    <div data-hal="vps" class="sembunyi">
+      <div class="card">
+        <h2>Aset di VPS</h2>
+        <p class="ket">Berkas aset di repo gratis RAPS-STAR-ASET, disajikan lewat jsDelivr.</p>
+        <div class="row"><button class="aksi" id="muatVps">Muat daftar</button></div>
+        <div class="kotak" id="isiVps">Belum dimuat.</div>
+      </div>
+    </div>
+
+    <!-- EMOTE -->
+    <div data-hal="emote" class="sembunyi">
+      <div class="card">
+        <h2>Emote room</h2>
+        <p class="ket">Emote yang tersimpan di Firestore.</p>
+        <div class="row"><button class="aksi" id="muatEmote">Muat emote</button></div>
+        <div class="kotak" id="isiEmote">Belum dimuat.</div>
+      </div>
+    </div>
+
+    <!-- KIRIM KE USER -->
+    <div data-hal="kirim" class="sembunyi">
+      <div class="card">
+        <h2>Kirim ke user</h2>
+        <p class="ket">Coin, VIP, atau panel untuk satu user.</p>
+        <label>ID user</label>
+        <input id="idKirim" placeholder="100000">
+        <label>Jumlah coin</label>
+        <input id="coinKirim" inputmode="numeric" value="1000000">
+        <div class="row">
+          <button class="aksi" id="kirimCoin">Kirim coin</button>
+          <button class="aksi hantu" id="setCoinUser">Set saldo</button>
+          <button class="aksi bahaya" id="resetCoinUser">Reset coin</button>
+        </div>
+        <div class="pesan" id="pesanCoin"></div>
+        <label style="margin-top:14px">VIP tier (1-9) dan hari</label>
+        <div style="display:flex;gap:8px">
+          <input id="tierVip" type="number" min="1" max="9" value="1">
+          <input id="hariVip" type="number" min="1" value="30">
+        </div>
+        <div class="row">
+          <button class="aksi" id="kirimVip">Kirim VIP</button>
+          <button class="aksi bahaya" id="cabutVip">Cabut VIP</button>
+        </div>
+        <div class="pesan" id="pesanVip"></div>
+      </div>
+      <div class="card">
+        <h2>Kirim panel</h2>
+        <p class="ket">Manager bisa mengirim panel ke staf.</p>
+        <label>ID user penerima</label>
+        <input id="idPanel" placeholder="100000">
+        <label>Peran</label>
+        <select id="peranPanel">
+          <option value="manager">Panel Manager</option>
+          <option value="admin">Panel Admin</option>
+        </select>
+        <label>Stok coin peran itu</label>
+        <input id="coinPanel" inputmode="numeric" value="0">
+        <div class="row">
+          <button class="aksi" id="kirimPanel">Kirim panel</button>
+          <button class="aksi bahaya" id="cabutPanel">Cabut panel</button>
+        </div>
+        <div class="pesan" id="pesanPanel"></div>
+      </div>
+    </div>
+
+    <!-- STAF & SELLER -->
+    <div data-hal="staf" class="sembunyi">
+      <div class="card">
+        <h2>Staf &amp; seller</h2>
+        <p class="ket">User yang punya panel, peran, stok item, dan stok coin.</p>
+        <div class="row"><button class="aksi" id="muatStaf">Muat daftar</button></div>
+        <div id="daftarStaf"></div>
+        <div class="pesan" id="pesanStaf"></div>
+      </div>
+      <div class="card">
+        <h2>Stok item staf</h2>
+        <label>ID staf</label>
+        <input id="idStokItem" placeholder="100000">
+        <label>Item</label>
+        <select id="pilihItem"><option value="">Memuat item…</option></select>
+        <label>Hari berlaku</label>
+        <input id="hariItem" type="number" min="1" value="30">
+        <div class="row">
+          <button class="aksi" id="tambahItem">Tambah ke stok</button>
+          <button class="aksi hantu" id="lihatStok">Lihat stok</button>
+        </div>
+        <div class="kotak" id="isiStok">Belum dimuat.</div>
+        <div class="pesan" id="pesanStok"></div>
+      </div>
+    </div>
+
+    <!-- CS -->
+    <div data-hal="cs" class="sembunyi">
+      <div class="card">
+        <h2>Customer Service</h2>
+        <p class="ket">Kontak CS yang tampil di aplikasi.</p>
+        <div class="row"><button class="aksi" id="muatCs">Muat kontak</button></div>
+        <div class="kotak" id="isiCs">Belum dimuat.</div>
+      </div>
+    </div>
+
+    <!-- LAPORAN -->
+    <div data-hal="laporan" class="sembunyi">
+      <div class="card">
+        <h2>Laporan user</h2>
+        <p class="ket">Laporan masuk dari aplikasi.</p>
+        <div class="row"><button class="aksi" id="muatLaporan">Muat laporan</button></div>
+        <div class="kotak" id="isiLaporan">Belum dimuat.</div>
+      </div>
+    </div>
+
+    <!-- COIN & RESET -->
+    <div data-hal="coin" class="sembunyi">
+      <div class="card">
+        <h2>Coin &amp; reset</h2>
+        <p class="ket">Atur stok coin staf dan saldo coin user.</p>
+        <label>ID staf</label>
+        <input id="idStokCoin" placeholder="100000">
+        <label>Jumlah coin</label>
+        <input id="jumlahStokCoin" inputmode="numeric" value="100000">
+        <div class="row">
+          <button class="aksi" id="tambahCoin">Tambah stok</button>
+          <button class="aksi hantu" id="setCoin">Set stok</button>
+          <button class="aksi bahaya" id="nolCoin">Nolkan</button>
+        </div>
+        <div class="pesan" id="pesanStokCoin"></div>
+      </div>
+    </div>
+
+    <!-- CEK IN -->
+    <div data-hal="cekin" class="sembunyi">
+      <div class="card">
+        <h2>Cek in harian</h2>
+        <p class="ket">Hadiah cek in yang tersimpan di Firestore.</p>
+        <div class="row"><button class="aksi" id="muatCekin">Muat data</button></div>
+        <div class="kotak" id="isiCekin">Belum dimuat.</div>
+      </div>
+    </div>
+
+    <!-- RILIS -->
+    <div data-hal="rilis" class="sembunyi">
+      <div class="card">
+        <h2>Rilis aplikasi</h2>
+        <p class="ket">Versi terbaru, ukuran APK, dan ukuran patch.</p>
+        <div class="kotak" id="isiRilis">Memuat…</div>
+        <div class="row"><button class="aksi hantu" id="muatRilis">Segarkan</button></div>
+      </div>
+    </div>
+
+    <!-- BLOKIR -->
+    <div data-hal="blokir" class="sembunyi">
+      <div class="card">
+        <h2>Blokir user</h2>
+        <p class="ket">User yang diblokir melihat layar blokir saat membuka aplikasi.</p>
+        <label>ID user</label>
+        <input id="idBlokir" placeholder="100000">
+        <label>Alasan (boleh kosong)</label>
+        <input id="alasanBlokir" placeholder="Pelanggaran aturan">
+        <div class="row">
+          <button class="aksi bahaya" id="blokirUser">Blokir</button>
+          <button class="aksi hantu" id="bukaBlokir">Buka blokir</button>
+        </div>
+        <div class="pesan" id="pesanBlokir"></div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getAuth, signInWithEmailAndPassword, signInWithPopup, signInWithRedirect,
+  GoogleAuthProvider, onAuthStateChanged, signOut
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs,
+  query, where, limit, serverTimestamp, deleteField, increment, getCountFromServer
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDPn1GeGFPzLKrybV1AoXnQOzzcvbeyeDQ",
+  authDomain: "raps-star.firebaseapp.com",
+  projectId: "raps-star",
+  storageBucket: "raps-star.firebasestorage.app",
+  messagingSenderId: "109949114150",
+  appId: "1:109949114150:android:83625d507cff44c70c53e7",
+  databaseURL: "https://raps-star-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
+const PEMILIK = "fedli840@gmail.com";
+const APK = "https://tagalungpey-stack.github.io/RAPS-STAR-APK";
+const RTDB = firebaseConfig.databaseURL;
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const $ = (id) => document.getElementById(id);
+const aman = (t) => String(t ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const angka = (n) => Number(n || 0).toLocaleString("id-ID");
+const tulis = (id, teks, jenis = "") => { const e = $(id); if (e) { e.className = "pesan " + jenis; e.textContent = teks; } };
+const mb = (n) => (Number(n || 0) / 1048576).toFixed(1) + " MB";
+const nol = (v) => Math.trunc(Number(String(v || "").replace(/[^0-9]/g, "")) || 0);
+
+/* ---------- jam ---------- */
+setInterval(() => {
+  $("jam").textContent = new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+}, 1000);
+
+/* ---------- sidebar ---------- */
+const judul = {
+  dashboard: "Dashboard", user: "User", room: "Room", gift: "Gift", cashback: "Cashback gift",
+  frame: "Frame & banner", aset: "Aset & VIP", vps: "Aset di VPS", emote: "Emote room",
+  kirim: "Kirim ke user", staf: "Staf & seller", cs: "Customer Service", laporan: "Laporan user",
+  coin: "Coin & reset", cekin: "Cek in harian", rilis: "Rilis aplikasi", blokir: "Blokir user"
+};
+function bukaHalaman(nama) {
+  document.querySelectorAll("#menu button").forEach((b) => b.classList.toggle("aktif", b.dataset.hal === nama));
+  document.querySelectorAll("[data-hal]").forEach((d) => {
+    if (d.hasAttribute("data-hal") && d.id !== "menu" && !d.closest("#menu")) d.classList.toggle("sembunyi", d.dataset.hal !== nama);
+  });
+  $("judulHal").textContent = judul[nama] || "Panel";
+  $("sidebar").classList.add("tutup"); $("tirai").classList.remove("buka");
+  if (nama === "rilis") muatRilis();
+  if (nama === "staf") muatItem();
+}
+document.querySelectorAll("#menu button").forEach((b) => { b.onclick = () => bukaHalaman(b.dataset.hal); });
+document.querySelectorAll("[data-lompat]").forEach((b) => { b.onclick = () => bukaHalaman(b.dataset.lompat); });
+$("bukaMenu").onclick = () => { $("sidebar").classList.toggle("tutup"); $("tirai").classList.toggle("buka"); };
+$("tirai").onclick = () => { $("sidebar").classList.add("tutup"); $("tirai").classList.remove("buka"); };
+if (window.innerWidth > 860) $("sidebar").classList.remove("tutup");
+else $("sidebar").classList.add("tutup");
+
+/* ---------- masuk ---------- */
+const hp = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+$("masuk").onclick = async () => {
+  tulis("pesanMasuk", "Memeriksa…");
+  try { await signInWithEmailAndPassword(auth, $("email").value.trim(), $("sandi").value); }
+  catch (e) { tulis("pesanMasuk", pesanAuth(e), "err"); }
+};
+$("masukGoogle").onclick = async () => {
+  tulis("pesanMasuk", "Membuka Google…");
+  const p = new GoogleAuthProvider();
+  try { if (hp) await signInWithRedirect(auth, p); else await signInWithPopup(auth, p); }
+  catch (e) { tulis("pesanMasuk", pesanAuth(e), "err"); }
+};
+$("keluar").onclick = () => signOut(auth);
+function pesanAuth(e) {
+  const k = e?.code || "";
+  if (k.includes("invalid-credential") || k.includes("wrong-password") || k.includes("user-not-found")) return "Email atau sandi salah.";
+  if (k.includes("too-many-requests")) return "Terlalu banyak percobaan. Coba lagi nanti.";
+  if (k.includes("popup-closed")) return "Jendela Google ditutup sebelum selesai.";
+  if (k.includes("unauthorized-domain")) return "Domain ini belum diizinkan di Firebase Authentication.";
+  return e?.message || "Gagal masuk.";
+}
+
+onAuthStateChanged(auth, (u) => {
+  const pemilik = !!u && (u.email || "").toLowerCase() === PEMILIK;
+  $("kartuMasuk").classList.toggle("sembunyi", pemilik);
+  $("isi").classList.toggle("sembunyi", !pemilik);
+  $("emailSaya").textContent = u?.email || "belum masuk";
+  $("namaKaki").textContent = u?.email || "belum masuk";
+  $("avSaya").textContent = (u?.email || "?")[0].toUpperCase();
+  $("peranKaki").textContent = pemilik ? "pemilik panel" : "–";
+  if (pemilik) { muatDashboard(); muatItem(); muatRilis(); }
+  else if (u) tulis("pesanMasuk", "Akun " + u.email + " bukan pemilik panel ini.", "err");
+});
+
+/* ---------- pembantu ---------- */
+async function uidDari(nilai) {
+  const t = String(nilai || "").trim();
+  if (!t) throw new Error("Isi ID user dulu");
+  if (t.includes("@")) {
+    const q = await getDocs(query(collection(db, "users"), where("email", "==", t), limit(1)));
+    if (!q.empty) return q.docs[0].id;
+    throw new Error("Email " + t + " tidak ditemukan");
+  }
+  if (!/^\d+$/.test(t) || t.length > 20) return t;
+  const s = await getDoc(doc(db, "userIds", t));
+  if (s.exists() && s.data().uid) return s.data().uid;
+  for (const medan of ["userId", "uid"]) {
+    const q = await getDocs(query(collection(db, "userIds"), where(medan, "==", t), limit(1)));
+    if (!q.empty) { const u = q.docs[0].data().uid; if (u) return u; }
+  }
+  const q2 = await getDocs(query(collection(db, "users"), where("userId", "==", t), limit(1)));
+  if (!q2.empty) return q2.docs[0].id;
+  throw new Error("ID " + t + " tidak ditemukan");
+}
+async function hitung(nama) {
+  try { const s = await getCountFromServer(collection(db, nama)); return s.data().count; } catch { return "–"; }
+}
+
+/* ---------- dashboard ---------- */
+async function muatDashboard() {
+  const [u, s, a] = await Promise.all([hitung("users"), hitung("stafApk"), hitung("aset")]);
+  $("nUser").textContent = u; $("nStaf").textContent = s; $("nAset").textContent = a;
+  let versi = "–";
+  try { const r = await (await fetch(APK + "/unduh/build-info.json?t=" + Date.now())).json(); versi = r.versi || "–"; } catch {}
+  $("nVersi").textContent = versi;
+  $("rincian").innerHTML = `<div><b>Pengguna:</b> ${u}</div><div><b>Staf panel:</b> ${s}</div>
+    <div><b>Aset:</b> ${a}</div><div><b>Versi aplikasi:</b> ${aman(versi)}</div>
+    <div><b>Pemilik panel:</b> ${PEMILIK}</div>`;
+  $("kunci").innerHTML = `<div><b>Masuk panel:</b> terbuka (pemilik)</div>
+    <div><b>Proyek Firebase:</b> raps-star</div>
+    <div><b>Realtime Database:</b> asia-southeast1</div>
+    <div><b>Domain panel:</b> tagalungpey-stack.github.io</div>`;
+}
+
+/* ---------- user ---------- */
+$("cariUser").onclick = async () => {
+  const k = $("hasilCari"); k.textContent = "Mencari…";
+  try {
+    const uid = await uidDari($("kunciCari").value);
+    const [u, w, b, st] = await Promise.all([
+      getDoc(doc(db, "users", uid)), getDoc(doc(db, "wallets", uid)),
+      getDoc(doc(db, "banned", uid)), getDoc(doc(db, "stafApk", uid)),
+    ]);
+    const du = u.exists() ? u.data() : {}, dw = w.exists() ? w.data() : {};
+    const peran = Object.keys(st.exists() ? st.data().peran || {} : {});
+    const sampai = Number(dw.vipUntil || 0);
+    k.innerHTML = `<div><b>UID:</b> ${aman(uid)}</div>
+      <div><b>ID:</b> ${aman(du.userId || "–")}</div>
+      <div><b>Nama:</b> ${aman(du.name || du.nama || "–")}</div>
+      <div><b>Email:</b> ${aman(du.email || "–")}</div>
+      <div><b>Coin:</b> ${angka(dw.coins)} · <b>Berlian:</b> ${angka(dw.diamonds)}</div>
+      <div><b>VIP:</b> ${Number(dw.vip || 0) || "tidak aktif"}${sampai ? " · sampai " + new Date(sampai).toLocaleDateString("id-ID") : ""}</div>
+      <div><b>Panel:</b> ${peran.length ? peran.map((p) => `<span class="pil ${p}">${p}</span>`).join("") : "tidak ada"}</div>
+      <div><b>Blokir:</b> ${b.exists() ? '<span class="pil blokir">diblokir</span>' + aman(b.data().reason || "") : "tidak"}</div>`;
+  } catch (e) { k.textContent = "Gagal: " + (e.message || e); }
+};
+
+/* ---------- room ---------- */
+$("muatRoom").onclick = async () => {
+  const k = $("isiRoom"); k.textContent = "Memuat…";
+  try {
+    const r = await fetch(RTDB + "/pub/roomsPub.json?shallow=true");
+    if (!r.ok) throw new Error("kode " + r.status);
+    const j = await r.json();
+    const id = j ? Object.keys(j) : [];
+    k.innerHTML = id.length
+      ? `<div><b>${id.length} room publik</b></div>` + id.slice(0, 40).map((x) => `<div>· ${aman(x)}</div>`).join("")
+      : "Belum ada room publik.";
+  } catch (e) { k.textContent = "Room belum bisa dibaca dari panel (" + (e.message || e) + ")."; }
+};
+
+/* ---------- item / gift / frame ---------- */
+let daftarItem = [];
+async function muatItem() {
+  try {
+    const s = await getDocs(collection(db, "vipConfig"));
+    daftarItem = [];
+    s.forEach((x) => {
+      const d = x.data();
+      if (d.meta) return;
+      if (d.slot === "frame" || d.slot === "entry") daftarItem.push({ id: x.id, kind: d.slot, name: d.name || x.id });
+    });
+    daftarItem.sort((a, b) => a.name.localeCompare(b.name));
+    const opt = daftarItem.length
+      ? daftarItem.map((x) => `<option value="${aman(x.id)}">${x.kind === "frame" ? "Frame" : "Efek"} · ${aman(x.name)}</option>`).join("")
+      : '<option value="">Belum ada item frame/efek</option>';
+    $("pilihItem").innerHTML = opt; $("pilihGift").innerHTML = opt;
+  } catch { $("pilihItem").innerHTML = '<option value="">Gagal memuat item</option>'; }
+}
+
+$("kirimGift").onclick = async () => {
+  tulis("pesanGift", "Memproses…");
+  try {
+    const uid = await uidDari($("idGift").value);
+    const it = daftarItem.find((x) => x.id === $("pilihGift").value);
+    if (!it) throw new Error("Pilih item dulu");
+    const hari = Math.max(1, parseInt($("hariGift").value, 10) || 30);
+    await setDoc(doc(db, "wallets", uid), {
+      inv: { [it.id]: hari }, diperbarui: serverTimestamp()
+    }, { merge: true });
+    tulis("pesanGift", it.name + " dikirim ke dompet user itu.", "ok");
+  } catch (e) { tulis("pesanGift", "Gagal: " + (e.message || e), "err"); }
+};
+
+$("muatFrame").onclick = async () => {
+  const k = $("isiFrame"); k.innerHTML = '<div class="kotak">Memuat…</div>';
+  try {
+    const s = await getDocs(collection(db, "vipConfig"));
+    const baris = [];
+    s.forEach((x) => {
+      const d = x.data();
+      if (d.meta) return;
+      if (d.slot === "frame" || d.slot === "entry") baris.push({ id: x.id, nama: d.name || x.id, kind: d.slot, hari: d.days || 30, harga: d.price || d.harga || 0 });
+    });
+    k.innerHTML = baris.length
+      ? baris.map((b) => `<div class="baris"><div class="nm"><b>${aman(b.nama)}</b><span>${b.kind === "frame" ? "Frame" : "Efek"} · ${b.hari} hari · harga ${angka(b.harga)}</span></div><span style="font-size:10.5px;color:var(--redup)">${aman(b.id)}</span></div>`).join("")
+      : '<div class="kotak">Belum ada frame atau efek di vipConfig.</div>';
+  } catch (e) { k.innerHTML = '<div class="kotak">Gagal: ' + aman(e.message) + "</div>"; }
+};
+
+$("muatVip").onclick = async () => {
+  tulis("pesanVip", "");
+  try {
+    const s = await getDocs(collection(db, "vipConfig"));
+    let frame = 0, efek = 0, paket = 0;
+    const info = [];
+    s.forEach((x) => {
+      const d = x.data();
+      if (d.slot === "frame") frame++;
+      else if (d.slot === "entry") efek++;
+      if (d.slot === "vip" || d.vip || d.tier) { paket++; info.push(`${d.tier || x.id}: ${d.price || d.harga || "–"}`); }
+      if (d.meta) return;
+    });
+    $("nFrame").textContent = frame; $("nEfek").textContent = efek; $("nVip").textContent = paket;
+    $("isiVip").innerHTML = paket ? "<b>Paket VIP:</b><br>" + info.map(aman).join("<br>") : "Paket VIP belum terdaftar di vipConfig.";
+  } catch (e) { $("isiVip").textContent = "Gagal: " + (e.message || e); }
+};
+
+/* ---------- aset VPS ---------- */
+$("muatVps").onclick = async () => {
+  const k = $("isiVps"); k.textContent = "Memuat…";
+  try {
+    const r = await fetch("https://data.jsdelivr.com/v1/packages/gh/tagalungpey-stack/RAPS-STAR-ASET");
+    if (!r.ok) throw new Error("kode " + r.status);
+    const j = await r.json();
+    const files = [];
+    const jalan = (arr, awal = "") => arr.forEach((f) => {
+      const p = awal + "/" + f.name;
+      if (f.type === "directory") jalan(f.files || [], p); else files.push(p);
+    });
+    jalan(j.files || []);
+    k.innerHTML = files.length
+      ? `<div><b>${files.length} berkas aset</b></div>` + files.slice(0, 60).map((f) =>
+          `<div>· <a href="https://cdn.jsdelivr.net/gh/tagalungpey-stack/RAPS-STAR-ASET@main${aman(f)}" target="_blank" rel="noopener">${aman(f)}</a></div>`).join("")
+      : "Repo aset masih kosong.";
+  } catch (e) { k.textContent = "Gagal memuat daftar aset: " + (e.message || e); }
+};
+
+/* ---------- koleksi opsional ---------- */
+async function tampilKoleksi(nama, el, medan) {
+  const k = $(el); k.textContent = "Memuat…";
+  try {
+    const s = await getDocs(query(collection(db, nama), limit(30)));
+    if (s.empty) { k.textContent = "Belum ada data di koleksi " + nama + "."; return; }
+    k.innerHTML = s.docs.map((x) => {
+      const d = x.data();
+      const isi = medan.map((m) => `<b>${m}:</b> ${aman(d[m] ?? "–")}`).join(" · ");
+      return `<div>· ${aman(x.id)} — ${isi}</div>`;
+    }).join("");
+  } catch (e) { k.textContent = "Gagal membaca " + nama + ": " + (e.message || e); }
+}
+$("muatCashback").onclick = () => tampilKoleksi("cashbackConfig", "isiCashback", ["nama", "persen", "aktif"]);
+$("muatEmote").onclick = () => tampilKoleksi("emotes", "isiEmote", ["nama", "url", "aktif"]);
+$("muatCs").onclick = () => tampilKoleksi("csConfig", "isiCs", ["nama", "wa", "telegram", "aktif"]);
+$("muatLaporan").onclick = () => tampilKoleksi("laporan", "isiLaporan", ["pelapor", "target", "alasan", "waktu"]);
+$("muatCekin").onclick = () => tampilKoleksi("cekin", "isiCekin", ["hari", "hadiah", "coins"]);
+
+/* ---------- staf ---------- */
+$("muatStaf").onclick = async () => {
+  const el = $("daftarStaf"); el.innerHTML = '<div class="kotak">Memuat…</div>';
+  try {
+    const s = await getDocs(collection(db, "stafApk"));
+    const baris = [];
+    s.forEach((x) => {
+      const d = x.data();
+      const stok = Object.keys(d.stok || {}).length;
+      Object.entries(d.peran || {}).forEach(([role, v]) => {
+        if (v?.aktif === false) return;
+        baris.push({ uid: x.id, role, stok, coins: Number(v?.coins) || 0 });
+      });
+    });
+    if (!baris.length) { el.innerHTML = '<div class="kotak">Belum ada staf.</div>'; return; }
+    el.innerHTML = baris.map((b) => `<div class="baris"><div class="nm"><b>${aman(b.uid)}</b>
+      <span><span class="pil ${b.role}">${b.role}</span>${b.stok} item · coin ${angka(b.coins)}</span></div>
+      <button data-cabut="${aman(b.uid)}">Cabut</button></div>`).join("");
+    el.querySelectorAll("[data-cabut]").forEach((btn) => {
+      btn.onclick = async () => {
+        if (!confirm("Cabut panel " + btn.dataset.cabut + "?")) return;
+        btn.textContent = "…";
+        await setDoc(doc(db, "stafApk", btn.dataset.cabut), { peran: {}, diperbarui: serverTimestamp() }, { merge: true });
+        $("muatStaf").click();
+      };
+    });
+    tulis("pesanStaf", baris.length + " baris staf dimuat.", "ok");
+  } catch (e) { el.innerHTML = '<div class="kotak">Gagal: ' + aman(e.message) + "</div>"; }
+};
+
+$("tambahItem").onclick = async () => {
+  tulis("pesanStok", "Memproses…");
+  try {
+    const uid = await uidDari($("idStokItem").value);
+    const it = daftarItem.find((x) => x.id === $("pilihItem").value);
+    if (!it) throw new Error("Pilih item dulu");
+    const hari = Math.max(1, parseInt($("hariItem").value, 10) || 30);
+    await setDoc(doc(db, "stafApk", uid), {
+      uid, stok: { [it.kind + "_" + it.id]: { itemId: it.id, kind: it.kind, name: it.name, days: hari } }, diperbarui: serverTimestamp()
+    }, { merge: true });
+    tulis("pesanStok", it.name + " masuk stok staf itu.", "ok");
+  } catch (e) { tulis("pesanStok", "Gagal: " + (e.message || e), "err"); }
+};
+
+$("lihatStok").onclick = async () => {
+  const k = $("isiStok"); k.textContent = "Memuat…";
+  try {
+    const uid = await uidDari($("idStokItem").value);
+    const s = await getDoc(doc(db, "stafApk", uid));
+    const baris = Object.entries(s.exists() ? s.data().stok || {} : {});
+    if (!baris.length) { k.textContent = "Stok item kosong."; return; }
+    k.innerHTML = baris.map(([key, v]) => `<div class="baris"><div class="nm"><b>${aman(v.name || v.itemId)}</b>
+      <span>${v.kind === "frame" ? "Frame" : "Efek"} · ${Number(v.days) || 30} hari</span></div>
+      <button data-hapus="${aman(key)}">Hapus</button></div>`).join("");
+    k.querySelectorAll("[data-hapus]").forEach((b) => {
+      b.onclick = async () => {
+        await updateDoc(doc(db, "stafApk", uid), { ["stok." + b.dataset.hapus]: deleteField(), diperbarui: serverTimestamp() });
+        $("lihatStok").click();
+      };
+    });
+  } catch (e) { k.textContent = "Gagal: " + (e.message || e); }
+};
+
+/* ---------- kirim coin / vip / panel ---------- */
+$("kirimCoin").onclick = () => ubahCoin("tambah");
+$("setCoinUser").onclick = () => ubahCoin("set");
+$("resetCoinUser").onclick = () => { if (confirm("Reset coin user ini ke 0?")) ubahCoin("set", true); };
+async function ubahCoin(cara, kosong = false) {
+  tulis("pesanCoin", "Memproses…");
+  try {
+    const uid = await uidDari($("idKirim").value);
+    const n = kosong ? 0 : nol($("coinKirim").value);
+    const ref = doc(db, "wallets", uid);
+    if (cara === "tambah") await setDoc(ref, { coins: increment(n), diperbarui: serverTimestamp() }, { merge: true });
+    else await setDoc(ref, { coins: n, diperbarui: serverTimestamp() }, { merge: true });
+    const s = await getDoc(ref);
+    tulis("pesanCoin", "Saldo coin sekarang " + angka(s.data()?.coins || 0) + ".", "ok");
+  } catch (e) { tulis("pesanCoin", "Gagal: " + (e.message || e), "err"); }
+}
+$("kirimVip").onclick = async () => {
+  tulis("pesanVip", "Memproses…");
+  try {
+    const uid = await uidDari($("idKirim").value);
+    const tier = Math.min(9, Math.max(1, parseInt($("tierVip").value, 10) || 1));
+    const hari = Math.max(1, parseInt($("hariVip").value, 10) || 30);
+    await setDoc(doc(db, "wallets", uid), { vip: tier, vipUntil: Date.now() + hari * 86400000, diperbarui: serverTimestamp() }, { merge: true });
+    tulis("pesanVip", "VIP " + tier + " aktif " + hari + " hari.", "ok");
+  } catch (e) { tulis("pesanVip", "Gagal: " + (e.message || e), "err"); }
+};
+$("cabutVip").onclick = async () => {
+  tulis("pesanVip", "Memproses…");
+  try {
+    const uid = await uidDari($("idKirim").value);
+    await setDoc(doc(db, "wallets", uid), { vip: 0, vipUntil: 0, diperbarui: serverTimestamp() }, { merge: true });
+    tulis("pesanVip", "VIP user itu dicabut.", "ok");
+  } catch (e) { tulis("pesanVip", "Gagal: " + (e.message || e), "err"); }
+};
+$("kirimPanel").onclick = async () => {
+  tulis("pesanPanel", "Memproses…");
+  try {
+    const uid = await uidDari($("idPanel").value);
+    const peran = $("peranPanel").value;
+    const lama = await getDoc(doc(db, "stafApk", uid));
+    const peta = (lama.exists() ? lama.data().peran : {}) || {};
+    peta[peran] = { ...(peta[peran] || {}), aktif: true, coins: nol($("coinPanel").value), oleh: auth.currentUser?.email || "", sejak: Date.now() };
+    await setDoc(doc(db, "stafApk", uid), { uid, peran: peta, diperbarui: serverTimestamp() }, { merge: true });
+    tulis("pesanPanel", "Panel " + peran + " terkirim.", "ok");
+  } catch (e) { tulis("pesanPanel", "Gagal: " + (e.message || e), "err"); }
+};
+$("cabutPanel").onclick = async () => {
+  if (!confirm("Cabut semua panel user ini?")) return;
+  tulis("pesanPanel", "Memproses…");
+  try {
+    const uid = await uidDari($("idPanel").value);
+    await setDoc(doc(db, "stafApk", uid), { uid, peran: {}, diperbarui: serverTimestamp() }, { merge: true });
+    tulis("pesanPanel", "Semua panel user itu dicabut.", "ok");
+  } catch (e) { tulis("pesanPanel", "Gagal: " + (e.message || e), "err"); }
+};
+
+/* ---------- stok coin ---------- */
+$("tambahCoin").onclick = () => ubahStokCoin("tambah");
+$("setCoin").onclick = () => ubahStokCoin("set");
+$("nolCoin").onclick = () => { if (confirm("Nolkan stok coin staf ini?")) ubahStokCoin("set", true); };
+async function ubahStokCoin(cara, kosong = false) {
+  tulis("pesanStokCoin", "Memproses…");
+  try {
+    const uid = await uidDari($("idStokCoin").value);
+    const n = kosong ? 0 : nol($("jumlahStokCoin").value);
+    const s = await getDoc(doc(db, "stafApk", uid));
+    const peta = (s.exists() ? s.data().peran : {}) || {};
+    if (!Object.keys(peta).length) throw new Error("User itu belum punya panel");
+    Object.keys(peta).forEach((r) => {
+      const lama = Number(peta[r]?.coins) || 0;
+      peta[r] = { ...peta[r], coins: cara === "tambah" ? lama + n : n };
+    });
+    await setDoc(doc(db, "stafApk", uid), { uid, peran: peta, diperbarui: serverTimestamp() }, { merge: true });
+    tulis("pesanStokCoin", "Stok coin diperbarui.", "ok");
+  } catch (e) { tulis("pesanStokCoin", "Gagal: " + (e.message || e), "err"); }
+}
+
+/* ---------- rilis ---------- */
+async function muatRilis() {
+  const k = $("isiRilis"); if (!k) return;
+  k.textContent = "Memuat info rilis…";
+  try {
+    const [b, p] = await Promise.all([
+      (await fetch(APK + "/unduh/build-info.json?t=" + Date.now())).json(),
+      (await fetch(APK + "/unduh/patch-info.json?t=" + Date.now())).json().catch(() => null),
+    ]);
+    const patch = (p?.patch || []).map((x) => `<div>Patch ${aman(x.dari)} → ${aman(x.ke)}: ${mb(x.arm64?.ukuran)} (arm64), ${mb(x.armv7?.ukuran)} (armv7)</div>`).join("");
+    k.innerHTML = `<div><b>Versi terbaru:</b> ${aman(b.versi)}</div>
+      <div><b>APK:</b> arm64 ${mb(b.abis?.arm64?.ukuran)} · armv7 ${mb(b.abis?.armv7?.ukuran)} · universal ${mb(b.abis?.universal?.ukuran)}</div>
+      ${patch}
+      <div style="margin-top:8px"><b>Catatan:</b><br>${aman(b.catatan || "").replace(/\n/g, "<br>")}</div>
+      <div style="margin-top:8px"><a href="${APK}/" target="_blank" rel="noopener">Halaman unduh pengguna</a></div>`;
+  } catch (e) { k.textContent = "Gagal memuat info rilis: " + (e.message || e); }
+}
+$("muatRilis").onclick = muatRilis;
+
+/* ---------- blokir ---------- */
+$("blokirUser").onclick = async () => {
+  tulis("pesanBlokir", "Memproses…");
+  try {
+    const uid = await uidDari($("idBlokir").value);
+    await setDoc(doc(db, "banned", uid), {
+      reason: $("alasanBlokir").value.trim() || "Diblokir developer",
+      oleh: auth.currentUser?.email || "", waktu: serverTimestamp()
+    }, { merge: true });
+    tulis("pesanBlokir", "User diblokir.", "ok");
+  } catch (e) { tulis("pesanBlokir", "Gagal: " + (e.message || e), "err"); }
+};
+$("bukaBlokir").onclick = async () => {
+  tulis("pesanBlokir", "Memproses…");
+  try {
+    const uid = await uidDari($("idBlokir").value);
+    await deleteDoc(doc(db, "banned", uid));
+    tulis("pesanBlokir", "Blokir dibuka.", "ok");
+  } catch (e) { tulis("pesanBlokir", "Gagal: " + (e.message || e), "err"); }
+};
+</script>
+</body>
+</html>
