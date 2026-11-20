@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RAPS STAR Dev</title>
+<style>
+  :root{--bg:#0d1017;--card:#161c26;--line:#26303f;--ink:#e8eef8;--muted:#8fa1bb;--gold:#ffd54f;--red:#ef5350;--green:#4caf7d}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  header{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:5}
+  .logo{width:34px;height:34px;border-radius:9px;background:#6c4bd6;display:grid;place-items:center;font-weight:800;font-size:14px}
+  header b{font-size:15px}
+  header .sub{color:var(--muted);font-size:11px}
+  main{padding:16px;max-width:900px;margin:0 auto}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+  h2{font-size:14px;margin:0 0 10px;color:var(--gold);letter-spacing:.02em}
+  label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
+  input,select{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:#101722;color:var(--ink);font-size:14px}
+  button{padding:11px 14px;border-radius:10px;border:0;background:var(--gold);color:#111;font-weight:700;font-size:14px;cursor:pointer}
+  button.ghost{background:#1d2735;color:var(--ink);border:1px solid var(--line);font-weight:600}
+  button.danger{background:transparent;color:var(--red);border:1px solid #4a2b2b}
+  button:disabled{opacity:.55}
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+  .stat{background:#101722;border:1px solid var(--line);border-radius:12px;padding:12px}
+  .stat b{display:block;font-size:20px}
+  .stat span{font-size:11px;color:var(--muted)}
+  .pesan{font-size:13px;margin-top:10px;color:var(--muted)}
+  .pesan.err{color:var(--red)}
+  .pesan.ok{color:var(--green)}
+  .baris{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+  .baris:last-child{border-bottom:0}
+  .baris .nm{flex:1;min-width:0}
+  .baris .nm b{display:block;font-weight:600}
+  .baris .nm span{color:var(--muted);font-size:11px}
+  .tag{font-size:10px;padding:3px 7px;border-radius:99px;border:1px solid var(--line);color:var(--muted)}
+  .tag.on{color:var(--green);border-color:#2e5540}
+  .sembunyi{display:none!important}
+  a{color:var(--gold)}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">RS</div>
+  <div><b>RAPS STAR Dev</b><div class="sub">panel developer baru</div></div>
+  <div style="flex:1"></div>
+  <button class="ghost sembunyi" id="keluar">Keluar</button>
+</header>
+<main>
+  <section class="card" id="kartuMasuk">
+    <h2>Masuk</h2>
+    <label>Email panel</label>
+    <input id="email" type="email" placeholder="nama@email.com" autocomplete="username">
+    <label>Sandi</label>
+    <input id="sandi" type="password" placeholder="••••••••" autocomplete="current-password">
+    <div class="row">
+      <button id="masuk">Masuk</button>
+      <button class="ghost" id="masukGoogle">Masuk dengan Google</button>
+    </div>
+    <div class="pesan" id="pesanMasuk"></div>
+  </section>
+
+  <div id="isi" class="sembunyi">
+    <section class="card">
+      <h2>Ringkasan</h2>
+      <div class="grid" id="statistik"><div class="stat"><b>-</b><span>memuat</span></div></div>
+    </section>
+
+    <section class="card">
+      <h2>Kirim panel ke user</h2>
+      <label>ID user (angka) atau UID</label>
+      <input id="idUser" inputmode="numeric" placeholder="100000">
+      <label>Manager dari admin (khusus admin, boleh kosong)</label>
+      <input id="idManager" placeholder="kosongkan untuk manager">
+      <div class="row">
+        <button id="kirimManager">Kirim panel manager</button>
+        <button class="ghost" id="kirimAdmin">Kirim panel admin</button>
+        <button class="danger" id="cabut">Cabut panel</button>
+      </div>
+      <div class="pesan" id="pesanPanel"></div>
+    </section>
+
+    <section class="card">
+      <h2>Stok item staf</h2>
+      <label>ID staf (angka)</label>
+      <input id="idStafItem" inputmode="numeric">
+      <label>Item</label>
+      <select id="pilihItem"><option value="">Memuat item…</option></select>
+      <label>Durasi untuk user (hari)</label>
+      <input id="hariItem" type="number" value="30">
+      <div class="row">
+        <button id="tambahItem">Tambah ke stok</button>
+        <button class="ghost" id="muatStok">Lihat stok staf</button>
+      </div>
+      <div id="daftarStok" style="margin-top:10px"></div>
+      <div class="pesan" id="pesanStok"></div>
+    </section>
+
+    <section class="card">
+      <h2>Stok coin staf</h2>
+      <label>ID staf (angka)</label>
+      <input id="idStafCoin" inputmode="numeric">
+      <label>Peran</label>
+      <select id="peranCoin"><option value="manager">Manager</option><option value="admin">Admin</option></select>
+      <label>Jumlah coin</label>
+      <input id="jumlahCoin" inputmode="numeric" value="1000000">
+      <div class="row">
+        <button id="tambahCoin">Tambah stok</button>
+        <button class="ghost" id="setCoin">Set stok</button>
+        <button class="danger" id="nolCoin">Nolkan</button>
+      </div>
+      <div class="pesan" id="pesanCoin"></div>
+    </section>
+
+    <section class="card">
+      <h2>Daftar staf</h2>
+      <div class="row" style="margin-top:0"><button class="ghost" id="muatStaf">Muat ulang</button></div>
+      <div id="daftarStaf" style="margin-top:10px"><div class="pesan">Memuat…</div></div>
+    </section>
+
+    <section class="card">
+      <h2>Cari user</h2>
+      <label>ID angka atau UID</label>
+      <input id="cariUser" placeholder="100000">
+      <div class="row"><button class="ghost" id="tombolCari">Cari</button></div>
+      <div id="hasilCari" style="margin-top:10px"></div>
+    </section>
+
+    <section class="card">
+      <h2>Rilis aplikasi</h2>
+      <div id="infoRilis" class="pesan">Memuat…</div>
+      <div class="row"><button class="ghost" id="bukaUnduh">Halaman unduh</button></div>
+    </section>
+  </div>
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getAuth, onAuthStateChanged, signInWithEmailAndPassword, signInWithPopup,
+  signInWithRedirect, getRedirectResult, signOut, GoogleAuthProvider
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc,
+  serverTimestamp, deleteField, query, where, limit, getCountFromServer
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDPn1GeGFPzLKrybV1AoXnQOzzcvbeyeDQ",
+  authDomain: "raps-star.firebaseapp.com",
+  projectId: "raps-star",
+  storageBucket: "raps-star.firebasestorage.app",
+  messagingSenderId: "109949114150",
+  appId: "1:109949114150:android:83625d507cff44c70c53e7",
+  databaseURL: "https://raps-star-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
+const PEMILIK = "fedli840@gmail.com";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const $ = (id) => document.getElementById(id);
+const aman = (t) => String(t ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const angka = (n) => Number(n || 0).toLocaleString("id-ID");
+const tulis = (id, teks, jenis = "") => { const e = $(id); if (e) { e.className = "pesan " + jenis; e.textContent = teks; } };
+
+/* ---------------- masuk ---------------- */
+const ponsel = /Android|iPhone|iPad|iPod|Mobile|Opera Mini/i.test(navigator.userAgent);
+
+async function masukGoogle() {
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: "select_account" });
+  if (ponsel) { await signInWithRedirect(auth, provider); return; }
+  try { await signInWithPopup(auth, provider); }
+  catch (e) {
+    if (/popup-closed-by-user|popup-blocked|cancelled-popup-request|operation-not-supported/i.test(e?.code || "")) {
+      await signInWithRedirect(auth, provider); return;
+    }
+    throw e;
+  }
+}
+
+function pesanAuth(e) {
+  const k = e?.code || "";
+  if (k.includes("invalid-credential") || k.includes("wrong-password") || k.includes("user-not-found")) return "Email atau sandi salah.";
+  if (k.includes("unauthorized-domain")) return "Domain panel ini belum diizinkan di Firebase Authentication.";
+  if (k.includes("popup-closed-by-user") || k.includes("cancelled-popup-request")) return "Jendela Google tertutup. Coba lagi, atau masuk dengan email dan sandi.";
+  if (k.includes("too-many-requests")) return "Terlalu banyak percobaan, tunggu beberapa menit.";
+  return e?.message || "Gagal masuk.";
+}
+
+$("masuk").onclick = async () => {
+  tulis("pesanMasuk", "Memproses…", "");
+  try {
+    await signInWithEmailAndPassword(auth, $("email").value.trim(), $("sandi").value);
+  } catch (e) { tulis("pesanMasuk", pesanAuth(e), "err"); }
+};
+$("masukGoogle").onclick = async () => {
+  tulis("pesanMasuk", "Membuka Google…", "");
+  try { await masukGoogle(); } catch (e) { tulis("pesanMasuk", pesanAuth(e), "err"); }
+};
+$("sandi").addEventListener("keydown", (e) => { if (e.key === "Enter") $("masuk").click(); });
+getRedirectResult(auth).catch((e) => tulis("pesanMasuk", pesanAuth(e), "err"));
+
+/* ---------------- hak akses ---------------- */
+async function bolehPanel(user) {
+  const email = (user.email || "").toLowerCase();
+  if (!email) return false;
+  if (email === PEMILIK) return true;
+  try {
+    const s = await getDoc(doc(db, "panelAdmins", email));
+    return s.exists() && s.data().aktif === true;
+  } catch (e) { return false; }
+}
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    $("kartuMasuk").classList.remove("sembunyi");
+    $("isi").classList.add("sembunyi");
+    $("keluar").classList.add("sembunyi");
+    return;
+  }
+  if (!(await bolehPanel(user))) {
+    $("kartuMasuk").classList.remove("sembunyi");
+    $("isi").classList.add("sembunyi");
+    tulis("pesanMasuk", "Akun " + (user.email || user.uid) + " belum terdaftar sebagai admin panel. Minta owner menambahkannya.", "err");
+    return;
+  }
+  $("kartuMasuk").classList.add("sembunyi");
+  $("isi").classList.remove("sembunyi");
+  $("keluar").classList.remove("sembunyi");
+  muatSemua();
+});
+
+$("keluar").onclick = () => signOut(auth);
+
+/* ---------------- bantu ---------------- */
+async function uidDari(nilai) {
+  const t = String(nilai || "").trim();
+  if (!t) throw new Error("Isi ID user dulu");
+  if (!/^\d+$/.test(t) || t.length > 20) return t;
+  const s = await getDoc(doc(db, "userIds", t));
+  if (s.exists() && s.data().uid) return s.data().uid;
+  for (const medan of ["userId", "uid"]) {
+    const q = await getDocs(query(collection(db, "userIds"), where(medan, "==", t), limit(1)));
+    if (!q.empty) { const u = q.docs[0].data().uid; if (u) return u; }
+  }
+  const q2 = await getDocs(query(collection(db, "users"), where("userId", "==", t), limit(1)));
+  if (!q2.empty) return q2.docs[0].id;
+  throw new Error("ID " + t + " tidak ditemukan");
+}
+
+async function profil(uid) {
+  try {
+    const s = await getDoc(doc(db, "users", uid));
+    if (s.exists()) { const d = s.data(); return { nama: d.name || d.nickname || "", id: d.userId || "" }; }
+  } catch (e) { }
+  return { nama: "", id: "" };
+}
+
+async function stafDok(uid) {
+  const s = await getDoc(doc(db, "stafApk", uid));
+  return s.exists() ? s.data() : { uid, peran: {}, stok: {} };
+}
+
+/* ---------------- ringkasan ---------------- */
+async function muatStatistik() {
+  const kotak = $("statistik");
+  const hitung = async (nama) => { try { return (await getCountFromServer(collection(db, nama))).data().count; } catch (e) { return null; } };
+  const [users, staf, aset] = await Promise.all([hitung("users"), hitung("stafApk"), hitung("aset")]);
+  const tampil = (n) => (n === null ? "-" : angka(n));
+  kotak.innerHTML = `
+    <div class="stat"><b>${tampil(users)}</b><span>pengguna</span></div>
+    <div class="stat"><b>${tampil(staf)}</b><span>dokumen staf</span></div>
+    <div class="stat"><b>${tampil(aset)}</b><span>aset</span></div>`;
+}
+
+/* ---------------- panel staf ---------------- */
+$("kirimManager").onclick = () => kirimPanel("manager");
+$("kirimAdmin").onclick = () => kirimPanel("admin");
+
+async function kirimPanel(peran) {
+  const tombol = peran === "manager" ? $("kirimManager") : $("kirimAdmin");
+  tombol.disabled = true; tulis("pesanPanel", "Memproses…", "");
+  try {
+    const uid = await uidDari($("idUser").value);
+    const manager = peran === "admin" && $("idManager").value.trim() ? await uidDari($("idManager").value) : "";
+    const d = await stafDok(uid);
+    const peran2 = d.peran || {};
+    peran2[peran] = { ...(peran2[peran] || { coins: 0 }), aktif: true, manager };
+    await setDoc(doc(db, "stafApk", uid), {
+      uid, peran: peran2, jabatanApk: peran, aktif: true, diperbarui: serverTimestamp()
+    }, { merge: true });
+    tulis("pesanPanel", "Panel " + peran + " dikirim ke UID " + uid + ". Muncul di tab Saya setelah aplikasi dibuka ulang.", "ok");
+    gambarStaf();
+  } catch (e) { tulis("pesanPanel", "Gagal: " + (e.message || e), "err"); }
+  tombol.disabled = false;
+}
+
+$("cabut").onclick = async () => {
+  if (!confirm("Cabut panel user ini?")) return;
+  tulis("pesanPanel", "Memproses…", "");
+  try {
+    const uid = await uidDari($("idUser").value);
+    const d = await stafDok(uid);
+    const peran2 = d.peran || {};
+    Object.keys(peran2).forEach((k) => { peran2[k] = { ...peran2[k], aktif: false }; });
+    const masih = Object.values(peran2).some((x) => x.aktif);
+    await setDoc(doc(db, "stafApk", uid), { peran: peran2, aktif: masih, diperbarui: serverTimestamp() }, { merge: true });
+    tulis("pesanPanel", "Panel user itu dicabut.", "ok");
+    gambarStaf();
+  } catch (e) { tulis("pesanPanel", "Gagal: " + (e.message || e), "err"); }
+};
+
+/* ---------------- stok item ---------------- */
+let daftarItem = [];
+async function muatItem() {
+  try {
+    const s = await getDocs(collection(db, "vipConfig"));
+    daftarItem = [];
+    s.forEach((x) => {
+      const d = x.data();
+      if (d.meta) return;
+      if (d.slot === "frame" || d.slot === "entry") {
+        daftarItem.push({ id: x.id, kind: d.slot, name: d.name || x.id, days: Number(d.days) || 30 });
+      }
+    });
+    daftarItem.sort((a, b) => a.name.localeCompare(b.name));
+    $("pilihItem").innerHTML = daftarItem.length
+      ? daftarItem.map((x) => `<option value="${aman(x.id)}">${x.kind === "frame" ? "Frame" : "Efek"} · ${aman(x.name)}</option>`).join("")
+      : '<option value="">Belum ada item frame/efek</option>';
+  } catch (e) {
+    $("pilihItem").innerHTML = '<option value="">Gagal memuat item</option>';
+  }
+}
+
+$("tambahItem").onclick = async () => {
+  $("tambahItem").disabled = true; tulis("pesanStok", "Memproses…", "");
+  try {
+    const uid = await uidDari($("idStafItem").value);
+    const id = $("pilihItem").value;
+    if (!id) throw new Error("Pilih item dulu");
+    const it = daftarItem.find((x) => x.id === id) || { kind: "", name: id, days: 30 };
+    const hari = parseInt($("hariItem").value, 10) || it.days;
+    const kunci = String(id).replace(/[.#$\[\]/]/g, "_");
+    await setDoc(doc(db, "stafApk", uid), {
+      uid, stok: { [kunci]: { itemId: id, kind: it.kind, name: it.name, days: hari } }, diperbarui: serverTimestamp()
+    }, { merge: true });
+    tulis("pesanStok", "Item " + it.name + " masuk ke stok staf itu.", "ok");
+    lihatStok(uid);
+  } catch (e) { tulis("pesanStok", "Gagal: " + (e.message || e), "err"); }
+  $("tambahItem").disabled = false;
+};
+
+$("muatStok").onclick = async () => {
+  try { lihatStok(await uidDari($("idStafItem").value)); }
+  catch (e) { tulis("pesanStok", e.message, "err"); }
+};
+
+async function lihatStok(uid) {
+  const kotak = $("daftarStok");
+  kotak.textContent = "Memuat stok…";
+  try {
+    const d = await stafDok(uid);
+    const baris = Object.entries(d.stok || {});
+    if (!baris.length) { kotak.innerHTML = '<div class="pesan">Stok staf ini masih kosong.</div>'; return; }
+    kotak.innerHTML = baris.map(([k, v]) => `
+      <div class="baris"><div class="nm"><b>${aman(v.name || v.itemId || k)}</b><span>${aman(String(v.days || 0))} hari</span></div>
+      <button class="danger" data-hapus="${aman(k)}">Hapus</button></div>`).join("");
+    kotak.querySelectorAll("[data-hapus]").forEach((b) => {
+      b.onclick = async () => {
+        try {
+          await updateDoc(doc(db, "stafApk", uid), { ["stok." + b.dataset.hapus]: deleteField(), diperbarui: serverTimestamp() });
+          lihatStok(uid);
+        } catch (e) { tulis("pesanStok", "Gagal hapus: " + (e.message || e), "err"); }
+      };
+    });
+  } catch (e) { kotak.innerHTML = '<div class="pesan err">Gagal memuat stok: ' + aman(e.message) + "</div>"; }
+}
+
+/* ---------------- stok coin ---------------- */
+$("tambahCoin").onclick = () => ubahCoin("tambah");
+$("setCoin").onclick = () => ubahCoin("set");
+$("nolCoin").onclick = () => { if (confirm("Nolkan stok coin staf ini?")) ubahCoin("set", true); };
+
+async function ubahCoin(cara, nol = false) {
+  tulis("pesanCoin", "Memproses…", "");
+  try {
+    const uid = await uidDari($("idStafCoin").value);
+    const peran = $("peranCoin").value;
+    const n = nol ? 0 : Math.trunc(Number(String($("jumlahCoin").value).replace(/[^0-9]/g, "")) || 0);
+    const d = await stafDok(uid);
+    const peta = d.peran || {};
+    const lama = Number((peta[peran] || {}).coins) || 0;
+    const baru = cara === "tambah" ? lama + n : n;
+    peta[peran] = { ...(peta[peran] || { aktif: true, manager: "" }), coins: baru };
+    await setDoc(doc(db, "stafApk", uid), { uid, peran: peta, diperbarui: serverTimestamp() }, { merge: true });
+    tulis("pesanCoin", "Stok coin " + peran + " sekarang " + angka(baru) + ".", "ok");
+    gambarStaf();
+  } catch (e) { tulis("pesanCoin", "Gagal: " + (e.message || e), "err"); }
+}
+
+/* ---------------- daftar staf ---------------- */
+$("muatStaf").onclick = () => gambarStaf();
+
+async function gambarStaf() {
+  const kotak = $("daftarStaf");
+  kotak.innerHTML = '<div class="pesan">Memuat…</div>';
+  try {
+    const s = await getDocs(collection(db, "stafApk"));
+    const baris = [];
+    s.forEach((x) => {
+      const d = x.data();
+      const stok = Object.keys(d.stok || {}).length;
+      const peta = d.peran && Object.keys(d.peran).length
+        ? d.peran
+        : (d.jabatanApk ? { [d.jabatanApk]: { aktif: d.aktif !== false, coins: d.coins || 0 } } : {});
+      Object.entries(peta).forEach(([role, v]) => baris.push({ uid: x.id, role, aktif: v.aktif !== false, stok, coins: Number(v.coins) || 0 }));
+    });
+    if (!baris.length) { kotak.innerHTML = '<div class="pesan">Belum ada staf. Kirim panel ke user di atas.</div>'; return; }
+    kotak.innerHTML = "";
+    for (const b of baris) {
+      const el = document.createElement("div");
+      el.className = "baris";
+      el.innerHTML = `<div class="nm"><b>memuat…</b><span>${b.role === "manager" ? "Manager" : "Admin"} · ${b.stok} item · coin ${angka(b.coins)}</span></div>
+        <span class="tag ${b.aktif ? "on" : ""}">${b.aktif ? "aktif" : "dicabut"}</span>`;
+      kotak.appendChild(el);
+      profil(b.uid).then((p) => {
+        el.querySelector("b").textContent = (p.nama || "Tanpa nama") + " · ID " + (p.id || "-");
+      });
+    }
+  } catch (e) {
+    kotak.innerHTML = '<div class="pesan err">Gagal memuat staf: ' + aman(e.message) + "</div>";
+  }
+}
+
+/* ---------------- cari user ---------------- */
+$("tombolCari").onclick = async () => {
+  const kotak = $("hasilCari");
+  kotak.innerHTML = '<div class="pesan">Mencari…</div>';
+  try {
+    const uid = await uidDari($("cariUser").value);
+    const p = await profil(uid);
+    const d = await stafDok(uid);
+    const peran = Object.keys(d.peran || {});
+    kotak.innerHTML = `<div class="baris"><div class="nm"><b>${aman(p.nama || "Tanpa nama")}</b>
+      <span>ID ${aman(p.id || "-")} · UID ${aman(uid)}</span></div>
+      <span class="tag ${peran.length ? "on" : ""}">${peran.length ? peran.join(" + ") : "bukan staf"}</span></div>`;
+  } catch (e) { kotak.innerHTML = '<div class="pesan err">' + aman(e.message || e) + "</div>"; }
+};
+
+/* ---------------- rilis ---------------- */
+async function muatRilis() {
+  try {
+    const r = await fetch("https://tagalungpey-stack.github.io/RAPS-STAR-APK/unduh/build-info.json?t=" + Date.now());
+    const j = await r.json();
+    const ukuran = j.ukuran_apk ? (j.ukuran_apk / 1048576).toFixed(1) + " MB" : "-";
+    $("infoRilis").className = "pesan ok";
+    $("infoRilis").textContent = "Versi terbaru " + j.versi + " · APK " + ukuran + " · " + (j.catatan || "").split("\n")[0];
+  } catch (e) {
+    $("infoRilis").className = "pesan err";
+    $("infoRilis").textContent = "Gagal membaca info rilis.";
+  }
+}
+$("bukaUnduh").onclick = () => window.open("https://tagalungpey-stack.github.io/RAPS-STAR-APK/", "_blank");
+
+/* ---------------- awal ---------------- */
+function muatSemua() {
+  muatStatistik();
+  muatItem();
+  gambarStaf();
+  muatRilis();
+}
+</script>
+</body>
+</html>
