@@ -114,6 +114,42 @@
     </section>
 
     <section class="card">
+      <h2>Dompet user (coin &amp; VIP)</h2>
+      <label>ID user (angka) atau UID</label>
+      <input id="idDompet" inputmode="numeric" placeholder="100000">
+      <label>Jumlah coin</label>
+      <input id="jumlahDompet" inputmode="numeric" value="1000000">
+      <div class="row">
+        <button id="kirimCoin">Kirim coin</button>
+        <button class="ghost" id="setCoinUser">Set saldo</button>
+        <button class="danger" id="resetCoinUser">Reset coin</button>
+      </div>
+      <label>VIP tier (1-9) dan hari</label>
+      <div style="display:flex;gap:8px">
+        <input id="tierVip" type="number" min="1" max="9" value="1">
+        <input id="hariVip" type="number" min="1" value="30">
+      </div>
+      <div class="row">
+        <button class="ghost" id="kirimVip">Kirim VIP</button>
+        <button class="danger" id="cabutVip">Cabut VIP</button>
+      </div>
+      <div class="pesan" id="pesanDompet"></div>
+    </section>
+
+    <section class="card">
+      <h2>Blokir user</h2>
+      <label>ID user (angka) atau UID</label>
+      <input id="idBlokir" inputmode="numeric" placeholder="100000">
+      <label>Alasan (boleh kosong)</label>
+      <input id="alasanBlokir" placeholder="Pelanggaran aturan">
+      <div class="row">
+        <button class="danger" id="blokirUser">Blokir</button>
+        <button class="ghost" id="bukaBlokir">Buka blokir</button>
+      </div>
+      <div class="pesan" id="pesanBlokir"></div>
+    </section>
+
+    <section class="card">
       <h2>Daftar staf</h2>
       <div class="row" style="margin-top:0"><button class="ghost" id="muatStaf">Muat ulang</button></div>
       <div id="daftarStaf" style="margin-top:10px"><div class="pesan">Memuat…</div></div>
@@ -143,7 +179,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
   getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc,
-  serverTimestamp, deleteField, query, where, limit, getCountFromServer
+  serverTimestamp, deleteField, increment, deleteDoc, query, where, limit, getCountFromServer
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -435,6 +471,69 @@ async function gambarStaf() {
     kotak.innerHTML = '<div class="pesan err">Gagal memuat staf: ' + aman(e.message) + "</div>";
   }
 }
+
+
+/* ---------------- dompet user ---------------- */
+$("kirimCoin").onclick = () => ubahDompet("tambah");
+$("setCoinUser").onclick = () => ubahDompet("set");
+$("resetCoinUser").onclick = () => { if (confirm("Reset coin user ini ke 0?")) ubahDompet("set", true); };
+
+async function ubahDompet(cara, nol = false) {
+  tulis("pesanDompet", "Memproses…", "");
+  try {
+    const uid = await uidDari($("idDompet").value);
+    const n = nol ? 0 : Math.trunc(Number(String($("jumlahDompet").value).replace(/[^0-9]/g, "")) || 0);
+    const ref = doc(db, "wallets", uid);
+    if (cara === "tambah") await setDoc(ref, { coins: increment(n), diperbarui: serverTimestamp() }, { merge: true });
+    else await setDoc(ref, { coins: n, diperbarui: serverTimestamp() }, { merge: true });
+    const s = await getDoc(ref);
+    tulis("pesanDompet", "Saldo coin user itu sekarang " + angka(s.data()?.coins || 0) + ".", "ok");
+  } catch (e) { tulis("pesanDompet", "Gagal: " + (e.message || e), "err"); }
+}
+
+$("kirimVip").onclick = async () => {
+  tulis("pesanDompet", "Memproses…", "");
+  try {
+    const uid = await uidDari($("idDompet").value);
+    const tier = Math.min(9, Math.max(1, parseInt($("tierVip").value, 10) || 1));
+    const hari = Math.max(1, parseInt($("hariVip").value, 10) || 30);
+    const sampai = Date.now() + hari * 86400000;
+    await setDoc(doc(db, "wallets", uid), { vip: tier, vipUntil: sampai, diperbarui: serverTimestamp() }, { merge: true });
+    tulis("pesanDompet", "VIP " + tier + " aktif " + hari + " hari untuk user itu.", "ok");
+  } catch (e) { tulis("pesanDompet", "Gagal: " + (e.message || e), "err"); }
+};
+
+$("cabutVip").onclick = async () => {
+  tulis("pesanDompet", "Memproses…", "");
+  try {
+    const uid = await uidDari($("idDompet").value);
+    await setDoc(doc(db, "wallets", uid), { vip: 0, vipUntil: 0, diperbarui: serverTimestamp() }, { merge: true });
+    tulis("pesanDompet", "VIP user itu dicabut.", "ok");
+  } catch (e) { tulis("pesanDompet", "Gagal: " + (e.message || e), "err"); }
+};
+
+/* ---------------- blokir user ---------------- */
+$("blokirUser").onclick = async () => {
+  tulis("pesanBlokir", "Memproses…", "");
+  try {
+    const uid = await uidDari($("idBlokir").value);
+    await setDoc(doc(db, "banned", uid), {
+      reason: $("alasanBlokir").value.trim() || "Diblokir developer",
+      oleh: auth.currentUser?.email || "",
+      waktu: serverTimestamp()
+    }, { merge: true });
+    tulis("pesanBlokir", "User diblokir. Aplikasinya menampilkan layar blokir saat dibuka.", "ok");
+  } catch (e) { tulis("pesanBlokir", "Gagal: " + (e.message || e), "err"); }
+};
+
+$("bukaBlokir").onclick = async () => {
+  tulis("pesanBlokir", "Memproses…", "");
+  try {
+    const uid = await uidDari($("idBlokir").value);
+    await deleteDoc(doc(db, "banned", uid));
+    tulis("pesanBlokir", "Blokir dibuka.", "ok");
+  } catch (e) { tulis("pesanBlokir", "Gagal: " + (e.message || e), "err"); }
+};
 
 /* ---------------- cari user ---------------- */
 $("tombolCari").onclick = async () => {
